@@ -79,6 +79,7 @@ class ThreadSafeQueue:
             else:
                 return None
 
+        # 这里需要注意，保证判空与取出元素的组合操作的原子性
         self.lock.acquire()
         item = None
         if len(self.queue) > 0:  # 使用带互斥锁的self.size()方法会导致程序无法顺利执行
@@ -89,31 +90,10 @@ class ThreadSafeQueue:
 
     def get(self, index, block=False, timeout=0):
         """获取指定索引的元素"""
-        if not isinstance(index, int):
-            index = int(index)
-
-        # 队列为空时
-        if self.size() == 0:
-            # 需要阻塞等待
-            if block:
-                self.condition.acquire()
-                self.condition.wait(timeout=timeout)  # 阻塞等待
-                self.condition.release()
-            else:
-                return None
-
-        if self.size() == 0:
-            return None
-
-        # 队列不为空时
-        if self.size() >= (index+1):
-            self.lock.acquire()
-            item = self.queue[index]
-            self.queue[index:] = self.queue[index+1:]
-            self.lock.release()
-            return item
-
-        return None
+        self.lock.acquire()
+        item = self.queue[index]
+        self.lock.release()
+        return item
 
 
 if __name__ == '__main__':
