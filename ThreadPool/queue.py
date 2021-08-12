@@ -88,7 +88,7 @@ class ThreadSafeQueue:
         self.lock.release()
         return item
 
-    def get(self, index, block=False, timeout=0):
+    def get(self, index):
         """获取指定索引的元素"""
         self.lock.acquire()
         item = self.queue[index]
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
     def consumer():
         while True:
-            item = queue.get(0, block=True, timeout=3)
+            item = queue.get(0)
             print('get item from queue: %d' % item)
             time.sleep(1)
 

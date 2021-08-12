@@ -35,7 +35,7 @@
 import threading
 import psutil
 
-from ThreadPool.task import Task
+from task import Task, AsyncTask
 from ThreadPool.queue import ThreadSafeQueue
 
 
@@ -43,7 +43,7 @@ class ProcessThread(threading.Thread):
     """任务处理线程"""
 
     def __init__(self, task_queue, *args, **kwargs):
-        super(ProcessThread).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.dismiss_flag = threading.Event()  # 任务线程停止的标记
         self.task_queue = task_queue  # 任务队列（处理线程不断从队列取出任务处理）
         self.args = args
@@ -56,11 +56,13 @@ class ProcessThread(threading.Thread):
                 break
 
             task = self.task_queue.pop()
-            if not isinstance(taks, Task):
+            if not isinstance(task, Task):
                 continue
 
             # 执行task实际逻辑（是通过函数调用引进来的）
             result = task.callable(*task.args, **task.kwargs)
+            if isinstance(task, AsyncTask):
+                task.set_result(result)
 
     def dismiss(self):
         self.dismiss_flag.set()

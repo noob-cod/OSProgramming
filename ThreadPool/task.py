@@ -8,6 +8,7 @@
     任务唯一标记（uuid）
     任务具体的执行逻辑，通过函数引用来传递
 """
+import threading
 import uuid
 
 
@@ -24,6 +25,30 @@ class Task:
 
     def __str__(self):
         return 'Task id:' + str(self.id)
+
+
+class AsyncTask(Task):
+
+    def __init__(self, func, *args, **kwargs):
+        self.result = None
+        self.condition = threading.Condition()
+        super().__init__(func, *args, **kwargs)
+
+    def set_result(self, result):
+        """设置运行结果"""
+        self.condition.acquire()
+        self.result = result
+        self.condition.notify()
+        self.condition.release()
+
+    def get_result(self):
+        """获取任务结果"""
+        self.condition.acquire()
+        if not self.result:
+            self.condition.wait()
+        result = self.result
+        self.condition.release()
+        return result
 
 
 def my_function():
