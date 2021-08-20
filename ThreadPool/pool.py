@@ -52,7 +52,7 @@ class ProcessThread(threading.Thread):
     def run(self):
         while True:
             # 判断线程是否被要求停止
-            if self.dismiss_flag.is_set():
+            if self.dismiss_flag.is_set():  # 当Event为True时线程会停止运行
                 break
 
             task = self.task_queue.pop()
